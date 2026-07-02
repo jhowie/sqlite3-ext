@@ -79,8 +79,8 @@ static void sqlite3_ext_getenvfunc (sqlite3_context *context, int argc, sqlite3_
     char *EnvVarValueBuffer;
     int EnvVarValueLength = 0;
 
-    // Make sure we got only a single argument, and that the argument is not
-    // a NULL string
+    // Make sure we got only a single argument, and that the first argument is
+    // not a NULL string
 
     assert (argc == 1);
     if (sqlite3_value_type (argv[0]) == SQLITE_NULL) return;

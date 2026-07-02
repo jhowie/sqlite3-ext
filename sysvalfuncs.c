@@ -108,7 +108,7 @@ static void sqlite3_ext_getgidfunc (sqlite3_context *context, int argc, sqlite3_
 
     assert (argc == 0);
 
-    // This is rerally simple - just set the result to the group id (GID)
+    // This is really simple - just set the result to the group id (GID)
     // value obtained by a call to getgid ()
 
     sqlite3_result_int (context, (int) getgid ());
