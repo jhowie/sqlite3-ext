@@ -105,10 +105,24 @@ static void sqlite3_ext_ipinsubnet4 (sqlite3_context *context, int argc, sqlite3
         // provided a subnet mask (three arguments)
 
         if (argc == 3) {
-                // The user supplied the netmask. This makes it extremely easy
-                // as we just read the subnet and the netmask as-is. Note that
-                // we use inet_addr () to read the netmask, as inet_network
-                // does not accept 0x<mask> notation!
+		// The user supplied the netmask. This makes it extremely easy
+		// as we just read the subnet and the netmask as-is. Check that
+		// the user did not specify a subnet in CIDR format, first
+
+		if (index ((const char *) sqlite3_value_text (argv [1]), (int) '/') != (char *) 0) {
+			// The user specified the subnet in CIDR format, and we
+			// cannot proceed as it will not be converted to a
+			// network address
+
+                        sprintf (errormsg, "Subnet in CIDR format (%s) does not work when netmask provided\n", (const char *) sqlite3_value_text (argv [1]));
+                        sqlite3_result_error (context, errormsg, -1);
+                        return;
+                }
+
+		// Get the subnet and netmask values and convert them to a
+		// format we can manipulate. Note that we use inet_addr () to
+		// read the netmask, as inet_network does not accept 0x<mask>
+		// notation!
 
                 ip_subnet = inet_network ((const char *) sqlite3_value_text (argv [1]));
                 ip_netmask = ntohl (inet_addr ((const char *) sqlite3_value_text (argv [2])));
@@ -121,8 +135,9 @@ static void sqlite3_ext_ipinsubnet4 (sqlite3_context *context, int argc, sqlite3
                 if (netmaskbits == -1) {
                         // An error occurred. All we can do is return an error
 
-                        sprintf (errormsg, "Unable to calculate network and mask for %s, inet_net_pton: %s\n", (const char *) sqlite3_value_text (argv [1]), strerror (errno));
+                        sprintf (errormsg, "Unable to calculate network and mask for %s (inet_net_pton)\n", (const char *) sqlite3_value_text (argv [1]));
                         sqlite3_result_error (context, errormsg, -1);
+                        return;
                 }
  
                 // Copy over the subnet and calculate the netmask, based on the
